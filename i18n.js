@@ -5,8 +5,8 @@ const STRINGS = {
     docTitle: 'CanCheck — Is your beer recalled?',
     tagline: 'Molson Coors beer recall — November 2026.',
     intro:
-      'On November 10, 2026, the CFIA recalled various Molson Coors beer products sold across Canada because they may contain <strong>pieces of metal</strong>.' +
-      ' Scan the <strong>UPC barcode</strong> on the can, bottle or box to check a product in seconds.',
+      'On November 10, 2026, the CFIA recalled various Molson Coors beer products sold across Canada because they may contain **pieces of metal**.' +
+      ' Scan the **UPC barcode** on the can, bottle or box to check a product in seconds.',
     startScan: 'Scan a barcode',
     manualEntry: 'Enter the UPC manually',
     manualTitle: 'Manual product check',
@@ -44,15 +44,15 @@ const STRINGS = {
     retryCamera: 'Retry camera',
     engineError: 'The barcode engine failed to load. Check your connection and reload the page.',
     langButton: 'FR',
-    langSwitchTo: 'fr',
+    langSwitchTo: 'Switch to French',
   },
 
   fr: {
     docTitle: 'CanCheck — Votre bière est-elle rappelée?',
     tagline: 'Rappel de bières Molson Coors — novembre 2026.',
     intro:
-      'Le 10 novembre 2026, l’ACIA a rappelé divers produits de bière Molson Coors vendus partout au Canada parce qu’ils pourraient contenir des <strong>morceaux de métal</strong>.' +
-      ' Scannez le <strong>code-barres UPC</strong> de la canette, de la bouteille ou de la boîte pour vérifier un produit en quelques secondes.',
+      'Le 10 novembre 2026, l’ACIA a rappelé divers produits de bière Molson Coors vendus partout au Canada parce qu’ils pourraient contenir des **morceaux de métal**.' +
+      ' Scannez le **code-barres UPC** de la canette, de la bouteille ou de la boîte pour vérifier un produit en quelques secondes.',
     startScan: 'Scanner un code-barres',
     manualEntry: 'Saisir le UPC manuellement',
     manualTitle: 'Vérification manuelle',
@@ -90,7 +90,7 @@ const STRINGS = {
     retryCamera: 'Réessayer la caméra',
     engineError: 'Le moteur de lecture des codes-barres n’a pas pu être chargé. Vérifiez votre connexion et rechargez la page.',
     langButton: 'EN',
-    langSwitchTo: 'en',
+    langSwitchTo: 'Passer à l’anglais',
   },
 };
 

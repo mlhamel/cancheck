@@ -229,6 +229,16 @@ main {
   font-size: 14px;
 }
 
+.global-error:empty {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  height: 0;
+  overflow: hidden;
+}
+
 .result-card {
   display: flex;
   flex-direction: column;
@@ -264,6 +274,10 @@ main {
   margin: 0;
   font-size: 24px;
   font-weight: 700;
+}
+
+.result-title:focus {
+  outline: none;
 }
 
 .result-body {

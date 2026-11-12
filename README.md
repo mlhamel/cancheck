@@ -6,7 +6,7 @@ CFIA recall list for the **November 2026 Molson Coors beer recall (pieces of
 metal)** — 29 product formats, 7 brands, Canada-wide.
 
 Pure JavaScript: no framework, no build step, no backend. Static files +
-[RFC-style][zxing] barcode scanning via the `zxing-js` CDN build.
+barcode scanning via the [`zxing-js`][zxing] library's CDN build.
 
 [zxing]: https://github.com/zxing-js/library
 
@@ -55,5 +55,5 @@ Push the repo to GitHub, then **Settings → Pages → Deploy from branch →
 - Not medical or legal advice; always verify against the official CFIA notice.
 - The UPC identifies the product **format**; the affected **lot codes** shown
   in the app must still be checked against the code printed on the package.
-- No history, no analytics, no cookies beyond the language setting
-  (`localStorage`), which never leaves the device.
+- No history, no analytics, no cookies or trackers; the only thing stored is
+  your language preference (`localStorage`), which never leaves the device.

@@ -12,9 +12,11 @@ export function upcCheckDigitValid(upc12) {
 }
 
 /*
-  UPC-A (12 digits) and EAN-13 (13 digits) share one numbering space: a 12-digit
-  UPC is an EAN-13 with a leading 0. Both 12- and 13-digit scans are matched by
-  stripping that leading 0 so a can printed as EAN-13 still matches the CFIA UPC.
+  UPC-A (12 digits) and EAN-13 (13 digits) share one numbering space: an
+  EAN-13 encoding of a UPC-A is the UPC-A with a leading 0. upcKey strips one
+  leading '0' from 13-digit values so those scans match the CFIA's 12-digit
+  UPCs. Any other 13-digit code is not a UPC-A encoding and is left unchanged
+  (it will simply find no recall-row match).
 */
 export function upcKey(raw) {
   const digits = digitsOnly(raw);

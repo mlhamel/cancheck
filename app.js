@@ -1,6 +1,6 @@
-import { getStrings, isSupportedLang } from './i18n.js?v=5';
-import { RECALL_META, RECALLED_PRODUCTS } from './data.js?v=5';
-import { classifyCode, findRecalledProduct, digitsOnly } from './lookup.js?v=5';
+import { getStrings, isSupportedLang } from './i18n.js?v=6';
+import { RECALL_META, RECALLED_PRODUCTS } from './data.js?v=6';
+import { classifyCode, findRecalledProduct, digitsOnly } from './lookup.js?v=6';
 
 const LANG_STORAGE_KEY = 'cancheck-lang';
 
@@ -47,6 +47,15 @@ function interpolate(template, values = {}) {
   return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? '');
 }
 
+function renderRichNodes(text) {
+  return text.split(/\*\*(.+?)\*\*/g).map((part, index) => {
+    if (index % 2 === 0) return document.createTextNode(part);
+    const strong = document.createElement('strong');
+    strong.textContent = part;
+    return strong;
+  });
+}
+
 function t(key, values) {
   const template = getStrings(state.lang)[key] ?? getStrings('en')[key] ?? key;
   return interpolate(template, values);
@@ -58,8 +67,8 @@ function applyI18n() {
   for (const el of document.querySelectorAll('[data-i18n]')) {
     el.textContent = t(el.dataset.i18n);
   }
-  for (const el of document.querySelectorAll('[data-i18n-html]')) {
-    el.innerHTML = t(el.dataset.i18nHtml);
+  for (const el of document.querySelectorAll('[data-i18n-rich]')) {
+    el.replaceChildren(...renderRichNodes(t(el.dataset.i18nRich)));
   }
   for (const el of document.querySelectorAll('[data-i18n-attr]')) {
     for (const pair of el.dataset.i18nAttr.split(';')) {
@@ -85,6 +94,9 @@ function applyI18n() {
 function showView(id) {
   for (const view of document.querySelectorAll('.view')) {
     view.hidden = view.id !== id;
+  }
+  if (id === 'view-result') {
+    $('resultTitle').focus();
   }
 }
 
@@ -311,15 +323,24 @@ function handleScanResult(text) {
   showResult(decoded.value, product);
 }
 
+function setManualError(show) {
+  $('manualError').hidden = !show;
+  if (show) {
+    $('manualInput').setAttribute('aria-invalid', 'true');
+  } else {
+    $('manualInput').removeAttribute('aria-invalid');
+  }
+}
+
 function submitManual(event) {
   event.preventDefault();
   const digits = digitsOnly($('manualInput').value);
   const decoded = classifyCode(digits);
   if (decoded.kind !== 'upc') {
-    $('manualError').hidden = false;
+    setManualError(true);
     return;
   }
-  $('manualError').hidden = true;
+  setManualError(false);
   showResult(decoded.value, findRecalledProduct(decoded.value, RECALLED_PRODUCTS));
 }
 
@@ -372,9 +393,7 @@ function showUnknown(rawText) {
 }
 
 function showGlobalError(message) {
-  const el = $('globalError');
-  el.hidden = message === null;
-  el.textContent = message ?? '';
+  $('globalError').textContent = message ?? '';
 }
 
 function switchLanguage() {
@@ -388,11 +407,14 @@ function bind() {
   $('btnScan').addEventListener('click', startScan);
   $('btnManual').addEventListener('click', () => {
     showGlobalError(null);
-    $('manualError').hidden = true;
+    setManualError(false);
     showView('view-manual');
   });
   $('btnManualBack').addEventListener('click', () => showView('view-home'));
   $('manualForm').addEventListener('submit', submitManual);
+  $('manualInput').addEventListener('input', () => {
+    if (!$('manualError').hidden) setManualError(false);
+  });
   $('btnStop').addEventListener('click', () => {
     stopScanner();
     showView('view-home');
@@ -403,7 +425,7 @@ function bind() {
   $('btnManualScan').addEventListener('click', () => {
     stopScanner();
     showGlobalError(null);
-    $('manualError').hidden = true;
+    setManualError(false);
     showView('view-manual');
   });
   $('btnHome').addEventListener('click', () => showView('view-home'));

@@ -7,19 +7,19 @@
   <meta name="description" content="Scan a beer UPC to check if it is on the November 2026 Molson Coors recall list (CFIA). EN/FR.">
   <title>CanCheck</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='84'%3E%F0%9F%8D%BA%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body>
 
   <header class="topbar">
     <span class="logo">CanCheck 🍺</span>
-    <button id="langToggle" type="button" class="lang-toggle">FR</button>
+    <button id="langToggle" type="button" class="lang-toggle" data-i18n-attr="aria-label:langSwitchTo">FR</button>
   </header>
 
   <main>
     <section id="view-home" class="view">
       <h1 class="tagline" data-i18n="tagline"></h1>
-      <p class="intro" data-i18n-html="intro"></p>
+      <p class="intro" data-i18n-rich="intro"></p>
       <div class="actions">
         <button id="btnScan" type="button" class="btn btn-primary" data-i18n="startScan"></button>
         <button id="btnManual" type="button" class="btn" data-i18n="manualEntry"></button>
@@ -56,6 +56,7 @@
           autocapitalize="off"
           spellcheck="false"
           maxlength="17"
+          aria-describedby="manualError"
           data-i18n-attr="placeholder:manualPlaceholder"
         >
         <p id="manualError" class="field-error" hidden data-i18n="invalidInput"></p>
@@ -67,9 +68,9 @@
     </section>
 
     <section id="view-result" class="view" hidden>
-      <div id="resultCard" class="result-card" aria-live="polite">
+      <div id="resultCard" class="result-card">
         <div id="resultIcon" class="result-icon" aria-hidden="true"></div>
-        <h1 id="resultTitle" class="result-title"></h1>
+        <h1 id="resultTitle" class="result-title" tabindex="-1"></h1>
         <p id="resultBody" class="result-body"></p>
 
         <div id="resultProduct" class="product" hidden>
@@ -94,7 +95,7 @@
       </div>
     </section>
 
-    <p id="globalError" class="global-error" hidden></p>
+    <p id="globalError" class="global-error" role="alert"></p>
   </main>
 
   <footer class="site-footer">
@@ -105,6 +106,6 @@
           crossorigin="anonymous"
           integrity="sha384-BzBxP10ZE72aitqj5UMmUsbKFliP/DZqA8Wq+BNNhlIJDGoEd1tpkMYXOg9+n6sB"
           defer></script>
-  <script type="module" src="app.js?v=5"></script>
+  <script type="module" src="app.js?v=6"></script>
 </body>
 </html>
