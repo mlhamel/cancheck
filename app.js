@@ -1,6 +1,6 @@
-import { getStrings, isSupportedLang } from './i18n.js?v=3';
-import { RECALL_META, RECALLED_PRODUCTS } from './data.js?v=3';
-import { classifyCode, findRecalledProduct, digitsOnly } from './lookup.js?v=3';
+import { getStrings, isSupportedLang } from './i18n.js?v=4';
+import { RECALL_META, RECALLED_PRODUCTS } from './data.js?v=4';
+import { classifyCode, findRecalledProduct, digitsOnly } from './lookup.js?v=4';
 
 const LANG_STORAGE_KEY = 'cancheck-lang';
 
@@ -156,8 +156,8 @@ async function startScan() {
     stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: 'environment',
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
       },
       audio: false,
     });
@@ -400,6 +400,12 @@ function bind() {
   $('btnTorch').addEventListener('click', toggleTorch);
   $('btnScanAgain').addEventListener('click', startScan);
   $('btnRetryCamera').addEventListener('click', startScan);
+  $('btnManualScan').addEventListener('click', () => {
+    stopScanner();
+    showGlobalError(null);
+    $('manualError').hidden = true;
+    showView('view-manual');
+  });
   $('btnHome').addEventListener('click', () => showView('view-home'));
   window.addEventListener('pagehide', stopScanner);
   document.addEventListener('visibilitychange', () => {
