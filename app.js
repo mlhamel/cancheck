@@ -1,6 +1,6 @@
-import { getStrings, isSupportedLang } from './i18n.js?v=4';
-import { RECALL_META, RECALLED_PRODUCTS } from './data.js?v=4';
-import { classifyCode, findRecalledProduct, digitsOnly } from './lookup.js?v=4';
+import { getStrings, isSupportedLang } from './i18n.js?v=5';
+import { RECALL_META, RECALLED_PRODUCTS } from './data.js?v=5';
+import { classifyCode, findRecalledProduct, digitsOnly } from './lookup.js?v=5';
 
 const LANG_STORAGE_KEY = 'cancheck-lang';
 
