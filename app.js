@@ -84,11 +84,11 @@ function showView(id) {
 }
 
 function stopScanner() {
-  state.scanner?.reset();
-  state.scanner = null;
-  for (const track of $('video').srcObject?.getTracks() ?? []) {
+  for (const track of state.stream?.getTracks() ?? []) {
     track.stop();
   }
+  state.scanner?.reset();
+  state.scanner = null;
   $('video').srcObject = null;
   state.stream = null;
   state.torchOn = false;
@@ -111,13 +111,15 @@ function beepAndVibrate() {
   }
 }
 
-function startScan() {
+async function startScan() {
   if (!window.ZXing) {
     showGlobalError(t('engineError'));
     return;
   }
+  stopScanner();
   showGlobalError(null);
   showView('view-scan');
+  state.lastScanText = '';
 
   const hints = new Map();
   hints.set(window.ZXing.DecodeHintType.POSSIBLE_FORMATS, [
@@ -126,27 +128,41 @@ function startScan() {
     window.ZXing.BarcodeFormat.QR_CODE,
   ]);
 
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false,
+    });
+  } catch (error) {
+    console.error(error);
+    showView('view-home');
+    showGlobalError(t('cameraError'));
+    return;
+  }
+
   const reader = new window.ZXing.BrowserMultiFormatReader(hints, 250);
   state.scanner = reader;
+  state.stream = stream;
 
-  reader
-    .decodeFromConstraints({ video: { facingMode: 'environment' } }, $('video'), (result, error) => {
-      if (state.scanner !== reader) return;
-      if (result) handleScanResult(result.getText());
-      else if (error && error.name !== 'NotFoundException') throw error;
-    })
-    .then(() => {
-      if (state.scanner !== reader) return;
-      state.stream = $('video').srcObject;
-      setupTorch();
-    })
-    .catch((error) => {
-      if (state.scanner !== reader) return;
-      stopScanner();
-      showView('view-home');
-      showGlobalError(t('cameraError'));
-      console.error(error);
-    });
+  const video = $('video');
+  video.srcObject = stream;
+  try {
+    await video.play();
+  } catch (error) {
+    console.error(error);
+    stopScanner();
+    showView('view-home');
+    showGlobalError(t('cameraError'));
+    return;
+  }
+  setupTorch();
+
+  reader.decodeFromStream(stream, video, (result, error) => {
+    if (state.scanner !== reader) return;
+    if (result) handleScanResult(result.getText());
+    else if (error && error.name !== 'NotFoundException') throw error;
+  });
 }
 
 function setupTorch() {
