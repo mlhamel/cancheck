@@ -1,6 +1,6 @@
-import { getStrings, isSupportedLang } from './i18n.js';
-import { RECALL_META, RECALLED_PRODUCTS } from './data.js';
-import { classifyCode, findRecalledProduct, digitsOnly } from './lookup.js';
+import { getStrings, isSupportedLang } from './i18n.js?v=2';
+import { RECALL_META, RECALLED_PRODUCTS } from './data.js?v=2';
+import { classifyCode, findRecalledProduct, digitsOnly } from './lookup.js?v=2';
 
 const LANG_STORAGE_KEY = 'cancheck-lang';
 
@@ -28,6 +28,9 @@ const state = {
   lastScanText: '',
   lastScanAt: 0,
   debugTimer: null,
+  watchdog: null,
+  stalledFor: 0,
+  scanGeneration: 0,
   scanError: '',
 };
 
@@ -86,11 +89,12 @@ function showView(id) {
 }
 
 function stopScanner() {
+  state.scanGeneration += 1;
+  clearStallWatchdog();
   if (state.debugTimer) {
     clearInterval(state.debugTimer);
     state.debugTimer = null;
   }
-  $('scanDebug').hidden = true;
   for (const track of state.stream?.getTracks() ?? []) {
     track.stop();
   }
@@ -124,10 +128,14 @@ async function startScan() {
     return;
   }
   stopScanner();
+  const myGeneration = state.scanGeneration;
   showGlobalError(null);
   showView('view-scan');
+  $('scanStall').hidden = true;
   state.lastScanText = '';
-  state.scanError = '';
+  state.scanError = 'phase:gum';
+  updateScanDebug();
+  startStallWatchdog();
 
   const hints = new Map();
   hints.set(window.ZXing.DecodeHintType.POSSIBLE_FORMATS, [
@@ -149,6 +157,7 @@ async function startScan() {
       audio: false,
     });
   } catch (error) {
+    if (state.scanGeneration !== myGeneration) return;
     state.scanError = `${error.name}`;
     console.error(error);
     updateScanDebug();
@@ -158,6 +167,12 @@ async function startScan() {
     return;
   }
 
+  if (state.scanGeneration !== myGeneration) {
+    stream.getTracks().forEach((track) => track.stop());
+    return;
+  }
+
+  state.scanError = 'phase:play';
   const reader = new window.ZXing.BrowserMultiFormatReader(hints, 250);
   state.scanner = reader;
   state.stream = stream;
@@ -166,6 +181,7 @@ async function startScan() {
   try {
     await video.play();
   } catch (error) {
+    if (state.scanGeneration !== myGeneration) return;
     state.scanError = `play: ${error.name}`;
     console.error(error);
     updateScanDebug();
@@ -175,6 +191,12 @@ async function startScan() {
     return;
   }
 
+  if (state.scanGeneration !== myGeneration) {
+    stream.getTracks().forEach((track) => track.stop());
+    return;
+  }
+
+  state.scanError = 'phase:decode';
   state.debugTimer = setInterval(updateScanDebug, 500);
   updateScanDebug();
   setupTorch();
@@ -203,6 +225,13 @@ function updateScanDebug() {
   const video = $('video');
   const track = state.stream?.getVideoTracks()[0];
   const fps = track?.getSettings?.().frameRate;
+  const live = track?.readyState === 'live' && video.readyState >= 2 && video.videoWidth > 0;
+  if (live) {
+    clearStallWatchdog();
+    if (state.scanError?.startsWith('phase:')) {
+      state.scanError = '';
+    }
+  }
   $('scanDebug').hidden = false;
   $('scanDebug').textContent = [
     `rs:${video.readyState}`,
@@ -212,6 +241,30 @@ function updateScanDebug() {
     `fps:${fps ? Math.round(fps) : '?'}`,
     state.scanError ? `err:${state.scanError}` : 'err:-',
   ].join(' ');
+}
+
+function startStallWatchdog() {
+  clearStallWatchdog();
+  state.stalledFor = 0;
+  state.watchdog = setInterval(() => {
+    state.stalledFor += 1;
+    if (state.stalledFor >= 8) showStall();
+  }, 1000);
+}
+
+function clearStallWatchdog() {
+  state.stalledFor = 0;
+  if (state.watchdog) {
+    clearInterval(state.watchdog);
+    state.watchdog = null;
+  }
+}
+
+function showStall() {
+  state.scanError = `stalled@${state.stalledFor}s ${state.scanError}`;
+  updateScanDebug();
+  stopScanner();
+  $('scanStall').hidden = false;
 }
 
 function setupTorch() {
@@ -341,10 +394,15 @@ function bind() {
   });
   $('btnTorch').addEventListener('click', toggleTorch);
   $('btnScanAgain').addEventListener('click', startScan);
+  $('btnRetryCamera').addEventListener('click', startScan);
   $('btnHome').addEventListener('click', () => showView('view-home'));
   window.addEventListener('pagehide', stopScanner);
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden && state.scanner) stopScanner();
+    if (document.hidden) {
+      if (state.scanner) stopScanner();
+      return;
+    }
+    if (!$('view-scan').hidden && !state.scanner && !state.watchdog) showStall();
   });
 }
 

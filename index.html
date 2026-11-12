@@ -7,7 +7,7 @@
   <meta name="description" content="Scan a beer UPC to check if it is on the November 2026 Molson Coors recall list (CFIA). EN/FR.">
   <title>CanCheck</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='84'%3E%F0%9F%8D%BA%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
 
@@ -33,6 +33,10 @@
       </div>
       <p class="hint" data-i18n="scanningHint"></p>
       <p id="scanDebug" class="scan-debug" hidden></p>
+      <div id="scanStall" class="scan-stall" hidden>
+        <p id="scanStallMsg" data-i18n="cameraStall"></p>
+        <button id="btnRetryCamera" type="button" class="btn" data-i18n="retryCamera"></button>
+      </div>
       <div class="actions">
         <button id="btnTorch" type="button" class="btn" hidden data-i18n="torch"></button>
         <button id="btnStop" type="button" class="btn btn-danger" data-i18n="stop"></button>
@@ -100,6 +104,6 @@
           crossorigin="anonymous"
           integrity="sha384-BzBxP10ZE72aitqj5UMmUsbKFliP/DZqA8Wq+BNNhlIJDGoEd1tpkMYXOg9+n6sB"
           defer></script>
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=2"></script>
 </body>
 </html>

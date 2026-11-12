@@ -38,6 +38,9 @@ const STRINGS = {
     dataNote: 'Recall data last updated {date} · Source: {agency}',
     cameraError:
       'The camera could not be started. Make sure you allowed camera access (HTTPS or localhost required), then try again — or type the UPC manually.',
+    cameraStall:
+      'The camera is not responding. Tap retry — on iPhone you may need to fully close this page (swipe the tab away) and reopen it.',
+    retryCamera: 'Retry camera',
     engineError: 'The barcode engine failed to load. Check your connection and reload the page.',
     langButton: 'FR',
     langSwitchTo: 'fr',
@@ -80,6 +83,9 @@ const STRINGS = {
     dataNote: 'Données de rappel mises à jour le {date} · Source : {agency}',
     cameraError:
       'Impossible d’accéder à la caméra. Assurez-vous d’avoir autorisé l’accès (HTTPS ou localhost requis), puis réessayez — ou tapez le UPC manuellement.',
+    cameraStall:
+      'La caméra ne répond pas. Touchez Réessayer — sur iPhone, il peut falloir fermer complètement la page (la retirer des onglets) et la rouvrir.',
+    retryCamera: 'Réessayer la caméra',
     engineError: 'Le moteur de lecture des codes-barres n’a pas pu être chargé. Vérifiez votre connexion et rechargez la page.',
     langButton: 'EN',
     langSwitchTo: 'en',

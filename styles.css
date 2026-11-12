@@ -177,6 +177,21 @@ main {
   color: var(--muted);
 }
 
+.scan-stall {
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  text-align: center;
+  font-size: 13px;
+}
+
+.scan-stall p {
+  margin: 0 0 10px;
+  color: var(--text);
+}
+
 .field-label {
   color: var(--muted);
 }
