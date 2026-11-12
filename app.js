@@ -27,6 +27,8 @@ const state = {
   torchOn: false,
   lastScanText: '',
   lastScanAt: 0,
+  debugTimer: null,
+  scanError: '',
 };
 
 const $ = (id) => document.getElementById(id);
@@ -84,6 +86,11 @@ function showView(id) {
 }
 
 function stopScanner() {
+  if (state.debugTimer) {
+    clearInterval(state.debugTimer);
+    state.debugTimer = null;
+  }
+  $('scanDebug').hidden = true;
   for (const track of state.stream?.getTracks() ?? []) {
     track.stop();
   }
@@ -120,6 +127,7 @@ async function startScan() {
   showGlobalError(null);
   showView('view-scan');
   state.lastScanText = '';
+  state.scanError = '';
 
   const hints = new Map();
   hints.set(window.ZXing.DecodeHintType.POSSIBLE_FORMATS, [
@@ -128,16 +136,25 @@ async function startScan() {
     window.ZXing.BarcodeFormat.QR_CODE,
   ]);
 
+  const video = $('video');
+  video.muted = true;
+  video.playsInline = true;
+  video.autoplay = true;
+  video.disableRemotePlayback = true;
+
   let stream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode: 'environment' },
       audio: false,
     });
   } catch (error) {
+    state.scanError = `${error.name}`;
     console.error(error);
+    updateScanDebug();
+    stopScanner();
     showView('view-home');
-    showGlobalError(t('cameraError'));
+    showGlobalError(`${t('cameraError')} (${error.name})`);
     return;
   }
 
@@ -145,24 +162,56 @@ async function startScan() {
   state.scanner = reader;
   state.stream = stream;
 
-  const video = $('video');
   video.srcObject = stream;
   try {
     await video.play();
   } catch (error) {
+    state.scanError = `play: ${error.name}`;
     console.error(error);
+    updateScanDebug();
     stopScanner();
     showView('view-home');
-    showGlobalError(t('cameraError'));
+    showGlobalError(`${t('cameraError')} (${error.name})`);
     return;
   }
+
+  state.debugTimer = setInterval(updateScanDebug, 500);
+  updateScanDebug();
   setupTorch();
 
-  reader.decodeFromStream(stream, video, (result, error) => {
-    if (state.scanner !== reader) return;
-    if (result) handleScanResult(result.getText());
-    else if (error && error.name !== 'NotFoundException') throw error;
-  });
+  reader
+    .decodeFromStream(stream, video, (result, error) => {
+      if (state.scanner !== reader) return;
+      if (result) handleScanResult(result.getText());
+      else if (error && /NotAllowed|abort|overconstrained|track/i.test(String(error.message || error.name))) {
+        state.scanError = `decode: ${error.name}`;
+        updateScanDebug();
+      }
+    })
+    .catch((error) => {
+      if (state.scanner !== reader) return;
+      state.scanError = `attach: ${error.name}`;
+      updateScanDebug();
+      stopScanner();
+      showView('view-home');
+      showGlobalError(`${t('cameraError')} (${error.name})`);
+      console.error(error);
+    });
+}
+
+function updateScanDebug() {
+  const video = $('video');
+  const track = state.stream?.getVideoTracks()[0];
+  const fps = track?.getSettings?.().frameRate;
+  $('scanDebug').hidden = false;
+  $('scanDebug').textContent = [
+    `rs:${video.readyState}`,
+    `vw:${video.videoWidth}x${video.videoHeight}`,
+    `tr:${track?.readyState ?? '-'}`,
+    `fm:${track?.getSettings?.().facingMode ?? '-'}`,
+    `fps:${fps ? Math.round(fps) : '?'}`,
+    state.scanError ? `err:${state.scanError}` : 'err:-',
+  ].join(' ');
 }
 
 function setupTorch() {
@@ -294,6 +343,9 @@ function bind() {
   $('btnScanAgain').addEventListener('click', startScan);
   $('btnHome').addEventListener('click', () => showView('view-home'));
   window.addEventListener('pagehide', stopScanner);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && state.scanner) stopScanner();
+  });
 }
 
 applyI18n();
