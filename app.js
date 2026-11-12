@@ -1,6 +1,6 @@
-import { getStrings, isSupportedLang } from './i18n.js?v=2';
-import { RECALL_META, RECALLED_PRODUCTS } from './data.js?v=2';
-import { classifyCode, findRecalledProduct, digitsOnly } from './lookup.js?v=2';
+import { getStrings, isSupportedLang } from './i18n.js?v=3';
+import { RECALL_META, RECALLED_PRODUCTS } from './data.js?v=3';
+import { classifyCode, findRecalledProduct, digitsOnly } from './lookup.js?v=3';
 
 const LANG_STORAGE_KEY = 'cancheck-lang';
 
@@ -143,6 +143,7 @@ async function startScan() {
     window.ZXing.BarcodeFormat.EAN_13,
     window.ZXing.BarcodeFormat.QR_CODE,
   ]);
+  hints.set(window.ZXing.DecodeHintType.TRY_HARDER, true);
 
   const video = $('video');
   video.muted = true;
@@ -153,7 +154,11 @@ async function startScan() {
   let stream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment' },
+      video: {
+        facingMode: 'environment',
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
       audio: false,
     });
   } catch (error) {
